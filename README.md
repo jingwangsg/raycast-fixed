@@ -1,6 +1,6 @@
 # Raycast Search Zotero
 
-Zotero cache will be updated immediately after any change
+**Zotero cache will be updated immediately after any change**
 
 * modify readCache to trigger cache update in any time. The sqlite file modified time will be compared with cache file to decide whether the cache will be updated.
 * replace getLatestModifyDate with getLatestModifyDateByFile, so that the operation like deletion will also be captured.
