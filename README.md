@@ -1,5 +1,12 @@
 # Raycast Search Zotero
 
+`<font color="#ff0000">`Zotero cache will be updated immediately after any change `</font>`
+
+* modify readCache to trigger cache update in any time. The sqlite file modified time will be compared with cache file to decide whether the cache will be updated.
+* replace getLatestModifyDate with getLatestModifyDateByFile, so that the operation like deletion will also be captured.
+
+---
+
 This extension brings [Zotero](https://www.zotero.org/) search to raycast!
 
 ![A screenshot of searching via raycast](./media/menu.png)
@@ -79,28 +86,28 @@ This extension supports different types of searches. Here are some common exampl
 
 1. Query: "YOLO"  - search for "YOLO" (case insensitive) in title, abstract, tags, authors and date
 2. Query: "YOLO 2020" - search for "YOLO" (case insensitive) in title, abstract, tags, authors &
-      date AND for "2020" in title, abstract, tags, authors & date
+   date AND for "2020" in title, abstract, tags, authors & date
 3. Query: "YOLO+2020" - search for "YOLO 2020" (case insensitive) in title, abstract, tags, authors &
-      date
+   date
 4. Query: "YOLO+2020 Detector" - search for "YOLO 2020" (case insensitive) in title, abstract,
-      tags, authors & date AND for "Detector" (case insensitive) in title, abstract, tags, authors
-      & date
+   tags, authors & date AND for "Detector" (case insensitive) in title, abstract, tags, authors
+   & date
 5. Query: "YOLO+2020 Detector Test+10" - search for "YOLO 2020" (case insensitive) in title, abstract,
-      tags, authors & date AND for "Detector" (case insensitive) in title, abstract, tags, authors
-      & date AND for "Test 10" (case insensitive) in title, abstract, tags, authors & date
+   tags, authors & date AND for "Detector" (case insensitive) in title, abstract, tags, authors
+   & date AND for "Test 10" (case insensitive) in title, abstract, tags, authors & date
 6. Query: "YOLO .AAA" - With tags of "AAA" (case insensitive) AND "YOLO" (case insensitive) in
-      title, abstract, tags, authors and date
+   title, abstract, tags, authors and date
 7. Query: "YOLO .AAA .BBB" - With tags of "AAA" (case insensitive) AND With tags of "AAA"
-      (case insensitive)  AND "YOLO" (case insensitive) in title, abstract, tags, authors and date
+   (case insensitive)  AND "YOLO" (case insensitive) in title, abstract, tags, authors and date
 8. Query: "YOLO .AAA+BBB" - With tags of "AAA BBB" (case insensitive) AND "YOLO" (case insensitive)
-      in title, abstract, tags, authors and date
+   in title, abstract, tags, authors and date
 9. Query: "YOLO+2020 .AAA+BBB AAA" - With tags of "AAA BBB" (case insensitive) AND "YOLO 2020"
-      (case insensitive) in title, abstract, tags, authors and date AND for "AAA" (case
-      insensitive) in title, abstract, tags, authors & date
+   (case insensitive) in title, abstract, tags, authors and date AND for "AAA" (case
+   insensitive) in title, abstract, tags, authors & date
 10. Query: "YOLO+2020 .AAA+BBB AAA .CCC" - With tags of "AAA BBB" (case insensitive) AND With tags
-      of "CCC"     (case insensitive) AND "YOLO 2020"
-      (case insensitive) in title, abstract, tags, authors and date AND for "AAA" (case
-      insensitive) in title, abstract, tags, authors & date
+    of "CCC"     (case insensitive) AND "YOLO 2020"
+    (case insensitive) in title, abstract, tags, authors and date AND for "AAA" (case
+    insensitive) in title, abstract, tags, authors & date
 
 Note that search for `tags` can be prefixed with `.` explicitly. Tags with spaces should be entered
 by replacing "spaces" with "+" characters. Use if multiple query terms prefixed with "." would
