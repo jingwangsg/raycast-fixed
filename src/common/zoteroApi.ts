@@ -411,13 +411,13 @@ export const searchResources = async (q: string): Promise<RefData[]> => {
     shouldSort: true,
     includeMatches: false,
     findAllMatches: true,
-    minMatchCharLength: 3,
-    threshold: 0.1,
+    minMatchCharLength: 2,
+    threshold: 0.0,
     ignoreLocation: true,
     keys: [
       {
         name: "title",
-        weight: 2,
+        weight: 5,
       },
       {
         name: "abstractNote",
@@ -455,6 +455,6 @@ export const searchResources = async (q: string): Promise<RefData[]> => {
   if (tss.length > 0) {
     query["$and"].push({ $and: tss.map((x) => ({ tags: x.replace(/\+/gi, " ") })) });
   }
-
+  
   return new Fuse(ret, options).search(query).map((x) => x.item);
 };
