@@ -1,5 +1,6 @@
 # Raycast Search Zotero
 
+# Fix
 **Zotero cache will be updated immediately after any change**
 
 * modify readCache to trigger cache update in any time. The sqlite file modified time will be compared with cache file to decide whether the cache will be updated.
