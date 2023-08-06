@@ -8,9 +8,11 @@ export async function parseResponse(response: Response): Promise<SearchResult[]>
 
   // Read the body content as a string
   const xml = await response.text();
+  // console.debug(xml)
 
   // Parse the XML string
   return parser.parseStringPromise(xml).then((result: any) => {
+    // console.debug(result.result.hits[0].hit)
 
     if (result.result.hits[0].hit) {
       return result.result.hits[0].hit.map((hit: any) => {
@@ -20,15 +22,42 @@ export async function parseResponse(response: Response): Promise<SearchResult[]>
         let venue = "";
         let year = "";
         let access = "";
-        let info = hit.info[0]
+        let info = hit.info[0];
+
+        // try {
+        //   console.debug(["unavailable", "withdrawn"].includes(info.access[0]));
+        // }
+        // catch (err) {
+        //   console.debug(info)
+        // }
+
+        if (info.access && ["unavailable", "withdrawn"].includes(info.access[0])) {
+          return {
+            id: hit.id[0],
+            citekey: "",
+            url: "",
+            doi_url: "",
+            title: "",
+            authors: [""],
+            venue: "",
+            year: "",
+            access: "invalid"
+          };
+        }
         
-  
         // Check url is not undefined
         if (hit.url) {
           url = info.url[0];
         }
-  
-        // Check authors are not undefined
+
+        // try {
+        //   console.debug(info.authors[0].author);
+        // }
+        // catch (error) {
+        //   console.debug("undefined");
+        //   console.debug(info);
+        //   console.debug(["unavailable", "withdrawn"].includes(info.access[0]))
+        // }
 
         if (info.authors[0].author) {
           authors = info.authors[0].author.map((author: any) => author._);

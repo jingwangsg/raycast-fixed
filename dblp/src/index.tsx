@@ -76,6 +76,8 @@ export default function Command() {
   //   return () => clearTimeout(timeOutId);
   // }, [searchText]);
 
+  // console.debug("url: " + url);
+
   const { data, isLoading } = useFetch(url, {
     parseResponse: parseResponse,
     execute: searchText.length > 0,
@@ -84,7 +86,9 @@ export default function Command() {
 
   // Sort and filter data based on search text and category
   data;
-  const filteredData = data?.sort(compareSearchResults(searchText || DEFAULT_TEXT));
+  const filteredData = data
+    ?.sort(compareSearchResults(searchText || DEFAULT_TEXT))
+    ?.filter(({ access: entryAccess }) => entryAccess != "invalid");
 
   const title = isLoading ? "Loading..." : searchText.length ? "No Results" : "Use the search bar above to get started";
 
@@ -115,8 +119,7 @@ function SearchListItem({ id, url, bib_url, doi_url, title, authors, venue, year
   const addToAuthor = multipleAuthors ? " et al." : "";
   const primaryAuthor = authors[0] + addToAuthor;
 
-  const accessories = [{ tag: venue }, { tag: year, color: Color.Green }];
-
+  const accessories = [{ tag: { value: venue, color: Color.Blue } }, { tag: { value: year, color: Color.Green } }];
   return (
     <List.Item
       id={id}
@@ -128,11 +131,11 @@ function SearchListItem({ id, url, bib_url, doi_url, title, authors, venue, year
           <Action.OpenInBrowser title="Open DBLP" url={url} icon={{ source: Icon.Link }} />
           <Action.OpenInBrowser title="Open DOI" url={doi_url} icon={{ source: Icon.Link }} />
           {/* <Action.CopyToClipboard
-            title="Copy BibTex"
-            content={bib_url}
-            icon={{ source: Icon.Redo }}
-            shortcut={{ modifiers: ["shift", "cmd"], key: "c" }}
-          /> */}
+          title="Copy BibTex"
+          content={bib_url}
+          icon={{ source: Icon.Redo }}
+          shortcut={{ modifiers: ["shift", "cmd"], key: "c" }}
+        /> */}
           <ActionCopyBibTeX bib_url={bib_url} />
         </ActionPanel>
       }
