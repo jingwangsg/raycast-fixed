@@ -44,45 +44,46 @@ export async function parseResponse(response: Response): Promise<SearchResult[]>
             access: "invalid"
           };
         }
-        
+
         // Check url is not undefined
         if (hit.url) {
           url = info.url[0];
         }
 
         // try {
-        //   console.debug(info.authors[0].author);
+        //   if (info.authors) {
+        //     console.debug(info.authors[0].author);
+        //   }
         // }
         // catch (error) {
         //   console.debug("undefined");
         //   console.debug(info);
-        //   console.debug(["unavailable", "withdrawn"].includes(info.access[0]))
         // }
 
-        if (info.authors[0].author) {
+        if (info.authors) {
           authors = info.authors[0].author.map((author: any) => author._);
         }
-  
+
         // Check title is not undefined
         if (info.title) {
           title = info.title[0];
         }
-  
+
         // Check venue is not undefined
         if (info.venue) {
           venue = info.venue[0];
         }
-  
+
         // Check year is not undefined
         if (info.year) {
           year = info.year[0];
         }
-  
+
         // Check access is not undefined
         if (info.access) {
           access = info.access[0];
         }
-  
+
         return {
           id: hit.id[0],
           citekey: info.key[0],
@@ -99,5 +100,5 @@ export async function parseResponse(response: Response): Promise<SearchResult[]>
       return [];
     }
   });
-  
+
 }
