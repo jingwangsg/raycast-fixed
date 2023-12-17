@@ -66,6 +66,7 @@ function SearchListItem({
   }
   const accessories = [
     // { tag: { value: String(paper.venue), color: Color.Blue } },
+    { tag: { value: String(paper.citationCount), color: Color.Yellow } },
     { tag: { value: String(paper.year), color: Color.Green } },
   ];
   const markdown_string = "[" + paper.title + "](" + paper.url + ")";
@@ -74,8 +75,9 @@ function SearchListItem({
   return (
     <List.Item
       title={paper.title}
-      // subtitle={"(" + String(paper.citationCount) + ")" + authorText}
-      subtitle={"(" + String(paper.citationCount) + ")"}
+      subtitle={authorText}
+      // subtitle={"(" + String(paper.citationCount) + ") " + authorText}
+      // subtitle={"(" + String(paper.citationCount) + ")"}
       // accessoryTitle={authorText}
       accessories={accessories}
       // detail={<List.Item.Detail markdown={PaperDetails(paper)} />}
@@ -102,11 +104,11 @@ function SearchListItem({
               url={searchUrl}
             />
             <Action.OpenInBrowser
-              title="Open Search in Top Conference"
+              title="[Top Only] Open Search"
               url={searchUrl + "&" + params}
             />
             <Action.OpenInBrowser
-              title="Open Paper with Top Conference Citations"
+              title="[Top Only] Open Paper"
               url={paper.url + "?" + params}
               shortcut={{ modifiers: ["shift", "cmd"], key: "enter" }}
             />
@@ -129,13 +131,13 @@ function SearchListItem({
 
 function PaperDetails({ paper }: { paper: Paper }) {
   // function PaperDetails(paper: Paper): string {
-  let md = `## ${paper.title}\n`;
-  md += `**Publication Year**: ${paper.year}\n\n`;
-  md += `**Citations**: ${paper.citationCount}\n\n`;
-  md += `**Venue**: *${paper.venue}*\n`;
-  md += `### Authors\n`;
-  md += `${paper.authors?.map((a) => a.name).join(", ")}\n`;
-  md += `### Abstract\n`;
+  let md = `## ${paper.title} (${paper.citationCount})\n`;
+  md += `**${paper.venue}** *${paper.year}*\n\n`;
+  md += "---\n";
+  // md += `**Publication Year**: ${paper.year}\n\n`;
+  // md += `**Venue**: *${paper.venue}*\n`;
+  // md += `### Authors\n`;
+  md += `*${paper.authors?.map((a) => a.name).join(", ")}*\n\n`;
   md += `${paper.abstract}\n`;
 
   // return md
@@ -240,7 +242,7 @@ function getConferenceList(): string[] {
     "Neural Information Processing Systems",
     "International Conference on Machine Learning",
     "International Conference on Learning Representations",
-    // "AAAI Conference on Artificial Intelligence",
+    "AAAI Conference on Artificial Intelligence",
     "Journal of Machine Learning Research",
     // "International Joint Conference on Artificial Intelligence",
     // "ACM Multimedia",
@@ -282,7 +284,7 @@ async function performSearch(
     "fields",
     "url,abstract,authors,url,title,citationCount,externalIds,venue,year,referenceCount"
   );
-  params.append("limit", "25");
+  params.append("limit", "50");
   params.append("sort", "relevance");
 
   // console.log(
