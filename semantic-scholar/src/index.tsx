@@ -138,15 +138,15 @@ function PaperDetails({ paper }: { paper: Paper }) {
   // md += `### Authors\n`;
   md += `*${paper.authors?.map((a) => a.name).join(", ")}*\n\n`;
 
-  if (paper.arxiv) {
-    md += "[Arxiv](" + paper.arxiv + ") ";
-  }
-  if (paper.DOI) {
-    md += "[DOI](" + paper.DOI + ") ";
-  }
-  if (paper.arxiv || paper.DOI) {
-    md += "\n\n";
-  }
+  // if (paper.arxiv) {
+  //   md += "[Arxiv](https://arxiv.org/abs/" + paper.arxiv + ") ";
+  // }
+  // if (paper.DOI) {
+  //   md += "[DOI](" + paper.DOI + ") ";
+  // }
+  // if (paper.arxiv || paper.DOI) {
+  //   md += "\n\n";
+  // }
 
   md += "`TL;DR` " + paper.tldr + "\n\n";
   md += `> ${paper.abstract}\n`;
