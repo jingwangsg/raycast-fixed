@@ -131,7 +131,10 @@ function SearchListItem({
 function PaperDetails({ paper }: { paper: Paper }) {
   // function PaperDetails(paper: Paper): string {
   let md = `## ${paper.title} (${paper.citationCount})\n`;
-  md += `**${paper.venue}** *${paper.year}*\n\n`;
+  if (paper.venue) {
+    md += `**${paper.venue}** `;
+  }
+  md += `(*${paper.publicationDate}*)\n\n`;
   md += "---\n";
   // md += `**Publication Year**: ${paper.year}\n\n`;
   // md += `**Venue**: *${paper.venue}*\n`;
@@ -148,8 +151,12 @@ function PaperDetails({ paper }: { paper: Paper }) {
   //   md += "\n\n";
   // }
 
-  md += "`TL;DR` " + paper.tldr + "\n\n";
-  md += `> ${paper.abstract}\n`;
+  if (paper.tldr) {
+    md += "`TL;DR` " + paper.tldr + "\n\n";
+  }
+  if (paper.abstract) {
+    md += `> ${paper.abstract}\n`;
+  }
 
   // return md
   return (
@@ -293,7 +300,7 @@ async function performSearch(
   params.append("query", searchText);
   params.append(
     "fields",
-    "url,abstract,authors,url,title,citationCount,externalIds,venue,year,referenceCount,tldr"
+    "url,abstract,authors,url,title,citationCount,externalIds,venue,year,referenceCount,tldr,publicationDate"
   );
   params.append("limit", "50");
   params.append("sort", "relevance");
@@ -332,6 +339,7 @@ async function performSearch(
           title: string;
           venue: string;
           year: number;
+          publicationDate: string;
           referenceCount: number;
           citationCount: number;
           externalIds: {
@@ -366,15 +374,16 @@ async function performSearch(
     return {
       id: paper.paperId,
       title: paper.title,
-      abstract: paper.abstract ? paper.abstract : "[ empty abstract ]",
+      abstract: paper.abstract ? paper.abstract : "",
       authors: paper.authors,
       url: paper.url,
-      venue: paper.venue ? paper.venue : "unknown",
+      venue: paper.venue ? paper.venue : "",
       year: paper.year,
+      publicationDate: paper.publicationDate,
       referenceCount: paper.referenceCount,
       citationCount: paper.citationCount,
       DOI: paper.externalIds.DOI,
-      tldr: paper.tldr ? paper.tldr.text : "[ empty tldr ]",
+      tldr: paper.tldr ? paper.tldr.text : "",
       arxiv: paper.externalIds.ArXiv ? paper.externalIds.ArXiv : "",
     };
   });
@@ -444,6 +453,7 @@ interface Paper {
   url: string;
   venue: string;
   year: number;
+  publicationDate: string;
   referenceCount: number;
   citationCount: number;
   DOI: string | undefined;
