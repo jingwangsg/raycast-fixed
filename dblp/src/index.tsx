@@ -132,6 +132,13 @@ function SearchListItem({ id, url, bib_url, doi_url, title, authors, venue, year
   const primaryAuthor = authors[0] + addToAuthor;
 
   const accessories = [{ tag: { value: venue, color: Color.Blue } }, { tag: { value: year, color: Color.Green } }];
+  console.log(doi_url);
+  // replace doi.org to doi.org.remotexs.ntu.edu.sg
+  if (doi_url) {
+    doi_url = doi_url.replace("doi.org", "doi.org.remotexs.ntu.edu.sg");
+  }
+  // console.log(doi_url);
+
   return (
     <List.Item
       id={id}
