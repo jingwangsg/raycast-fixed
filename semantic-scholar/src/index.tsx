@@ -137,6 +137,17 @@ function PaperDetails({ paper }: { paper: Paper }) {
   // md += `**Venue**: *${paper.venue}*\n`;
   // md += `### Authors\n`;
   md += `*${paper.authors?.map((a) => a.name).join(", ")}*\n\n`;
+
+  if (paper.arxiv) {
+    md += "[Arxiv](" + paper.arxiv + ") ";
+  }
+  if (paper.DOI) {
+    md += "[DOI](" + paper.DOI + ") ";
+  }
+  if (paper.arxiv || paper.DOI) {
+    md += "\n\n";
+  }
+
   md += "`TL;DR` " + paper.tldr + "\n\n";
   md += `> ${paper.abstract}\n`;
 
@@ -336,7 +347,7 @@ async function performSearch(
           tldr: {
             model: string;
             text: string;
-          }
+          };
         }[];
       }
     | { code: string; message: string };
@@ -437,4 +448,5 @@ interface Paper {
   citationCount: number;
   DOI: string | undefined;
   tldr?: string;
+  arxiv?: string;
 }
