@@ -70,7 +70,6 @@ function SearchListItem({
     { tag: { value: String(paper.year), color: Color.Green } },
   ];
   const markdown_string = "[" + paper.title + "](" + paper.url + ")";
-  console.log(markdown_string);
 
   return (
     <List.Item
@@ -138,7 +137,8 @@ function PaperDetails({ paper }: { paper: Paper }) {
   // md += `**Venue**: *${paper.venue}*\n`;
   // md += `### Authors\n`;
   md += `*${paper.authors?.map((a) => a.name).join(", ")}*\n\n`;
-  md += `${paper.abstract}\n`;
+  md += "`TL;DR` " + paper.tldr + "\n\n";
+  md += `> ${paper.abstract}\n`;
 
   // return md
   return (
@@ -282,7 +282,7 @@ async function performSearch(
   params.append("query", searchText);
   params.append(
     "fields",
-    "url,abstract,authors,url,title,citationCount,externalIds,venue,year,referenceCount"
+    "url,abstract,authors,url,title,citationCount,externalIds,venue,year,referenceCount,tldr"
   );
   params.append("limit", "50");
   params.append("sort", "relevance");
@@ -296,7 +296,7 @@ async function performSearch(
   if (api_key) {
     headers["x-api-key"] = String(api_key);
   }
-  console.log(headers);
+  // console.log(headers);
   console.log(
     "https://api.semanticscholar.org/graph/v1/paper/search?" + params.toString()
   );
@@ -325,6 +325,7 @@ async function performSearch(
           citationCount: number;
           externalIds: {
             DOI?: string;
+            ArXiv?: string;
           };
           url: string;
           abstract: string;
@@ -332,6 +333,10 @@ async function performSearch(
             authorId: string;
             name: string;
           }[];
+          tldr: {
+            model: string;
+            text: string;
+          }
         }[];
       }
     | { code: string; message: string };
@@ -358,6 +363,8 @@ async function performSearch(
       referenceCount: paper.referenceCount,
       citationCount: paper.citationCount,
       DOI: paper.externalIds.DOI,
+      tldr: paper.tldr ? paper.tldr.text : "[ empty tldr ]",
+      arxiv: paper.externalIds.ArXiv ? paper.externalIds.ArXiv : "",
     };
   });
 }
@@ -429,4 +436,5 @@ interface Paper {
   referenceCount: number;
   citationCount: number;
   DOI: string | undefined;
+  tldr?: string;
 }
