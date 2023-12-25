@@ -132,7 +132,11 @@ function PaperDetails({ paper }: { paper: Paper }) {
   // function PaperDetails(paper: Paper): string {
   let md = `## ${paper.title} (${paper.citationCount})\n`;
   if (paper.venue) {
-    md += `**${paper.venue}** `;
+    if (paper.venue.startsWith("arXiv")) {
+      md += `**[${paper.arxiv}](https://arxiv.org/abs/${paper.arxiv})** `;
+    } else {
+      md += `**${paper.venue}** `;
+    }
   }
   md += `(*${paper.publicationDate}*)\n\n`;
   md += "---\n";
