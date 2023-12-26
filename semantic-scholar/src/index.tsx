@@ -76,6 +76,8 @@ function SearchListItem({
   markdown_string += " ";
   if (paper.venue in conference_abbreviation) {
     markdown_string += conference_abbreviation[paper.venue];
+  } else if (paper.venue == "arXiv.org") {
+    markdown_string += "arXiv";
   }
   markdown_string += "'" + yearString;
   paper.markdown = markdown_string;
