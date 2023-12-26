@@ -69,7 +69,15 @@ function SearchListItem({
     { tag: { value: String(paper.citationCount), color: Color.Yellow } },
     { tag: { value: String(paper.year), color: Color.Green } },
   ];
-  const markdown_string = "[" + paper.title + "](" + paper.url + ")";
+  let markdown_string = "[" + paper.title + "](" + paper.url + ")";
+
+  const conference_abbreviation = getConferenceAbbreviation();
+  let yearString = String(paper.year % 100).padStart(2, "0");
+  markdown_string += " ";
+  if (paper.venue in conference_abbreviation) {
+    markdown_string += conference_abbreviation[paper.venue];
+  }
+  markdown_string += "'" + yearString;
 
   return (
     <List.Item
@@ -279,6 +287,30 @@ function getConferenceList(): string[] {
     "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval",
   ];
   return conferences;
+}
+
+function getConferenceAbbreviation(): { [key: string]: string } {
+  let abbreviations = {
+    "Neural Information Processing Systems": "NeurIPS",
+    "International Conference on Machine Learning": "ICML",
+    "International Conference on Learning Representations": "ICLR",
+    "AAAI Conference on Artificial Intelligence": "AAAI",
+    "Journal of Machine Learning Research": "JMLR",
+    "International Joint Conference on Artificial Intelligence": "IJCAI",
+    "ACM Multimedia": "ACM MM",
+    "Knowledge Discovery and Data Mining": "KDD",
+    "Conference on Empirical Methods in Natural Language Processing": "EMNLP",
+    "Annual Meeting of the Association for Computational Linguistics": "ACL",
+    "North American Chapter of the Association for Computational Linguistics":
+      "NAACL",
+    "Computer Vision and Pattern Recognition": "CVPR",
+    "European Conference on Computer Vision": "ECCV",
+    "IEEE International Conference on Computer Vision": "ICCV",
+    "IEEE Transactions on Pattern Analysis and Machine Intelligence": "TPAMI",
+    "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval":
+      "SIGIR",
+  };
+  return abbreviations;
 }
 
 // Function to read the API key from a text file synchronously
