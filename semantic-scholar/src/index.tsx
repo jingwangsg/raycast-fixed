@@ -78,6 +78,8 @@ function SearchListItem({
     markdown_string += conference_abbreviation[paper.venue];
   }
   markdown_string += "'" + yearString;
+  paper.markdown = markdown_string;
+  paper.top_citation_url = paper.url + "?" + params;
 
   return (
     <List.Item
@@ -188,6 +190,16 @@ function PaperDetails({ paper }: { paper: Paper }) {
                 <ActionCopyBibTeX DOI={paper.DOI} />
               </React.Fragment>
             )}
+            <Action.CopyToClipboard
+              title="Copy as Markdown"
+              content={String(paper.markdown)}
+              icon={Icon.Clipboard}
+              shortcut={{ modifiers: ["shift", "cmd"], key: "c" }}
+            />
+            <Action.OpenInBrowser
+              title="[Top Only] Open Paper"
+              url={String(paper.top_citation_url)}
+            />
           </ActionPanel.Section>
         </ActionPanel>
       }
@@ -495,4 +507,6 @@ interface Paper {
   DOI: string | undefined;
   tldr?: string;
   arxiv?: string;
+  markdown?: string;
+  top_citation_url?: string;
 }
