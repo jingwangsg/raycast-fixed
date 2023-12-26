@@ -13,6 +13,7 @@ const MAX_RESULTS = 50;
 
 function ActionCopyBibTeX({ bib_url }: { bib_url: string }) {
   const cancelRef = useRef<AbortController | null>(null);
+  console.log(`[DEBUG]${bib_url}`)
 
   const copyBibTex = useCallback(async () => {
     const toast = await showToast({
