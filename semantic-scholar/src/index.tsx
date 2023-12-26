@@ -80,6 +80,7 @@ function SearchListItem({
   markdown_string += "'" + yearString;
   paper.markdown = markdown_string;
   paper.top_citation_url = paper.url + "?" + params;
+  let bib_url = "https://dblp2.uni-trier.de/rec/" + paper.dblp + ".bib";
 
   return (
     <List.Item
@@ -125,10 +126,10 @@ function SearchListItem({
           <ActionPanel.Section>
             <Action.CopyToClipboard title="Copy Title" content={paper.title} />
             <Action.CopyToClipboard title="Copy URL" content={paper.url} />
-            {paper.DOI && (
+            {paper.dblp && (
               <React.Fragment>
-                <Action.CopyToClipboard title="Copy DOI" content={paper.DOI} />
-                <ActionCopyBibTeX DOI={paper.DOI} />
+                {/* <Action.CopyToClipboard title="Copy DOI" content={paper.DOI} /> */}
+                <ActionCopyBibTeX bib_url={bib_url} />
               </React.Fragment>
             )}
           </ActionPanel.Section>
@@ -172,6 +173,8 @@ function PaperDetails({ paper }: { paper: Paper }) {
     md += `> ${paper.abstract}\n`;
   }
 
+  let bib_url = "https://dblp2.uni-trier.de/rec/" + paper.dblp + ".bib";
+
   // return md
   return (
     <Detail
@@ -184,10 +187,10 @@ function PaperDetails({ paper }: { paper: Paper }) {
               title="Open in Connect Papers"
               url={connectPapersURL(paper)}
             />
-            {paper.DOI && (
+            {paper.dblp && (
               <React.Fragment>
-                <Action.CopyToClipboard title="Copy DOI" content={paper.DOI} />
-                <ActionCopyBibTeX DOI={paper.DOI} />
+                {/* <Action.CopyToClipboard title="Copy DOI" content={paper.dblp} /> */}
+                <ActionCopyBibTeX bib_url={bib_url} />
               </React.Fragment>
             )}
             <Action.CopyToClipboard
@@ -393,6 +396,7 @@ async function performSearch(
           externalIds: {
             DOI?: string;
             ArXiv?: string;
+            DBLP?: string;
           };
           url: string;
           abstract: string;
@@ -433,11 +437,63 @@ async function performSearch(
       DOI: paper.externalIds.DOI,
       tldr: paper.tldr ? paper.tldr.text : "",
       arxiv: paper.externalIds.ArXiv ? paper.externalIds.ArXiv : "",
+      dblp: paper.externalIds.DBLP ? paper.externalIds.DBLP : "",
     };
   });
 }
 
-function ActionCopyBibTeX({ DOI }: { DOI: string }) {
+function ActionCopyBibTeX({ bib_url }: { bib_url: string }) {
+  const cancelRef = useRef<AbortController | null>(null);
+
+  const copyBibTex = useCallback(async () => {
+    const toast = await showToast({
+      style: Toast.Style.Animated,
+      title: "Fetching BibTeX from DBLP",
+    });
+
+    try {
+      cancelRef.current?.abort();
+      cancelRef.current = new AbortController();
+
+      // Get BibTeX from doi.org
+      const url = new URL(bib_url);
+
+      const response = await fetch(url.toString(), {
+        method: "get",
+        headers: {
+          Accept: "application/x-bibtex",
+        },
+        signal: cancelRef.current.signal,
+      });
+
+      const bibTeX = await response.text();
+
+      if (!response.ok || bibTeX === undefined) {
+        throw new Error("BibTeX was not found");
+      }
+
+      // Copy the response to the clipboard
+      await showHUD("Copied to Clipboard");
+      await Clipboard.copy(bibTeX);
+      await popToRoot();
+    } catch (error) {
+      toast.style = Toast.Style.Failure;
+      toast.title = "Unable to fetch BibTeX";
+      toast.message = String(error);
+    }
+  }, [cancelRef]);
+
+  return (
+    <Action
+      title="Copy BibTeX"
+      icon={Icon.Clipboard}
+      onAction={copyBibTex}
+      // shortcut={{ modifiers: ["shift", "cmd"], key: "c" }}
+    />
+  );
+}
+
+function ActionCopyBibTeXbyDOI({ DOI }: { DOI: string }) {
   const cancelRef = useRef<AbortController | null>(null);
 
   const copyBibTex = useCallback(async () => {
@@ -507,6 +563,7 @@ interface Paper {
   DOI: string | undefined;
   tldr?: string;
   arxiv?: string;
+  dblp?: string;
   markdown?: string;
   top_citation_url?: string;
 }
