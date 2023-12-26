@@ -75,11 +75,10 @@ function SearchListItem({
   let yearString = String(paper.year % 100).padStart(2, "0");
   markdown_string += " ";
   if (paper.venue in conference_abbreviation) {
-    markdown_string += conference_abbreviation[paper.venue];
+    markdown_string += conference_abbreviation[paper.venue] + "'" + yearString;
   } else if (paper.venue == "arXiv.org") {
-    markdown_string += "arXiv";
+    markdown_string += "arXiv" + ":" + paper.arxiv;
   }
-  markdown_string += "'" + yearString;
   paper.markdown = markdown_string;
   paper.top_citation_url = paper.url + "?" + params;
   let bib_url = "https://dblp2.uni-trier.de/rec/" + paper.dblp + ".bib";
@@ -326,6 +325,8 @@ function getConferenceAbbreviation(): { [key: string]: string } {
     "IEEE Transactions on Pattern Analysis and Machine Intelligence": "TPAMI",
     "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval":
       "SIGIR",
+    "IEEE Workshop/Winter Conference on Applications of Computer Vision":
+      "WACV",
   };
   return abbreviations;
 }
