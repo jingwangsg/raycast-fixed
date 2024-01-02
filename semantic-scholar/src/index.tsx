@@ -76,12 +76,16 @@ function SearchListItem({
   markdown_string += " ";
   if (paper.venue in conference_abbreviation) {
     markdown_string += conference_abbreviation[paper.venue] + "'" + yearString;
-  } else {
+  } else if (paper.venue == "arXiv.org" || paper.venue == "") {
     markdown_string += "arXiv" + ":" + paper.arxiv;
   }
+  markdown_string += ` [PDF](https://arxiv.org/pdf/${paper.arxiv}.pdf)`;
   paper.markdown = markdown_string;
   paper.top_citation_url = paper.url + "?" + params;
+
   let bib_url = "https://dblp2.uni-trier.de/rec/" + paper.dblp + ".bib";
+  let arxiv_pdf_url = `https://arxiv.org/pdf/${paper.arxiv}.pdf`;
+  let paper_url = String(paper.arxiv ? arxiv_pdf_url : paper.DOI);
 
   return (
     <List.Item
@@ -102,7 +106,12 @@ function SearchListItem({
             />
             <Action.OpenInBrowser
               title="Open Paper in Browser"
+              url={paper_url}
+            />
+            <Action.OpenInBrowser
+              title="Open Paper in Semantic Scholar"
               url={paper.url}
+              shortcut={{ modifiers: ["shift", "cmd"], key: "enter" }}
             />
             <Action.CopyToClipboard
               title="Copy as Markdown"
@@ -327,6 +336,8 @@ function getConferenceAbbreviation(): { [key: string]: string } {
       "SIGIR",
     "IEEE Workshop/Winter Conference on Applications of Computer Vision":
       "WACV",
+    "Conference of the European Chapter of the Association for Computational Linguistics":
+      "EACL",
   };
   return abbreviations;
 }
