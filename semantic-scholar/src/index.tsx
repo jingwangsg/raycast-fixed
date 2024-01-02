@@ -79,7 +79,7 @@ function SearchListItem({
   } else if (paper.venue == "arXiv.org" || paper.venue == "") {
     markdown_string += "arXiv" + ":" + paper.arxiv;
   }
-  markdown_string += ` [PDF](https://arxiv.org/pdf/${paper.arxiv}.pdf)`;
+  markdown_string += ` [PDF](https://arxiv.org/pdf/${paper.arxiv}.pdf) `;
   paper.markdown = markdown_string;
   paper.top_citation_url = paper.url + "?" + params;
 
