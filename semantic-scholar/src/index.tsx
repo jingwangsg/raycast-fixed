@@ -81,7 +81,11 @@ function SearchListItem({
   }
   if (paper.arxiv) {
     markdown_string += ` [PDF](https://arxiv.org/pdf/${paper.arxiv}.pdf) `;
+  } else if (paper.DOI) {
+    markdown_string += ` [Official](https://doi.org.remotexs.ntu.edu.sg/${paper.DOI}) `;
   }
+  console.log(paper.title);
+  console.log(paper.DOI);
   paper.markdown = markdown_string;
   paper.top_citation_url = paper.url + "?" + params;
 
@@ -161,7 +165,11 @@ function PaperDetails({ paper }: { paper: Paper }) {
       md += `**${paper.venue}** `;
     }
   }
-  md += `(*${paper.publicationDate}*)\n\n`;
+  if (paper.publicationDate) {
+    md += `(*${paper.publicationDate}*)\n\n`;
+  } else {
+    md += `(*${paper.year}*)\n\n`;
+  }
   md += "---\n";
   // md += `**Publication Year**: ${paper.year}\n\n`;
   // md += `**Venue**: *${paper.venue}*\n`;
