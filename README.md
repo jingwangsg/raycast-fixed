@@ -7,4 +7,6 @@ Collection of fixed/modified raycast plugin for agile paper searching
 dblp heavily refers to arxiv plugin mentioned above
 
 # How to Install (after `npm run build`)?
-![](assets/image.png)
+
+![Alt text](image.png)
+
