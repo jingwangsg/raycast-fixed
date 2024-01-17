@@ -71,11 +71,16 @@ function SearchListItem({
   ];
   let markdown_string = "[" + paper.title + "](" + paper.url + ")";
 
-  const conference_abbreviation = getConferenceAbbreviation();
+  let conference_abbreviation: string = getConferenceAbbreviation(paper.venue);
   let yearString = String(paper.year % 100).padStart(2, "0");
+  if (paper.DOI) {
+    // DOI like "10.1109/CVPR.2018.00675"
+    yearString = paper.DOI.split("/")[1].split(".")[1].slice(2, 4);
+  }
+
   markdown_string += " ";
-  if (paper.venue in conference_abbreviation) {
-    markdown_string += conference_abbreviation[paper.venue] + "'" + yearString;
+  if (conference_abbreviation != "") {
+    markdown_string += conference_abbreviation + "'" + yearString;
   } else if (paper.venue == "arXiv.org" || paper.venue == "") {
     markdown_string += "arXiv" + ":" + paper.arxiv;
   }
@@ -324,8 +329,8 @@ function getConferenceList(): string[] {
   return conferences;
 }
 
-function getConferenceAbbreviation(): { [key: string]: string } {
-  let abbreviations = {
+function getConferenceAbbreviation(venue: string) {
+  let abbreviations: { [key: string]: string } = {
     "Neural Information Processing Systems": "NeurIPS",
     "International Conference on Machine Learning": "ICML",
     "International Conference on Learning Representations": "ICLR",
@@ -349,7 +354,15 @@ function getConferenceAbbreviation(): { [key: string]: string } {
     "Conference of the European Chapter of the Association for Computational Linguistics":
       "EACL",
   };
-  return abbreviations;
+  let cvpr_string: string =
+    "IEEE/CVF Conference on Computer Vision and Pattern Recognition";
+  if (venue in abbreviations) {
+    return abbreviations[venue];
+  } else if (venue.includes(cvpr_string)) {
+    return "CVPR";
+  } else {
+    return "";
+  }
 }
 
 // Function to read the API key from a text file synchronously
