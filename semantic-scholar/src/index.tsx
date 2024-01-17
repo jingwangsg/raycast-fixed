@@ -72,6 +72,7 @@ function SearchListItem({
   let markdown_string = "[" + paper.title + "](" + paper.url + ")";
 
   let conference_abbreviation: string = getConferenceAbbreviation(paper.venue);
+  console.log(paper.venue);
   let yearString = String(paper.year % 100).padStart(2, "0");
   if (paper.DOI && !paper.DOI.includes("arXiv")) {
     // DOI like "10.1109/CVPR.2018.00675"
@@ -342,36 +343,46 @@ function getConferenceList(): string[] {
   ];
   return conferences;
 }
+let lowercase_abbreviations: { [key: string]: string } = {};
 
 function getConferenceAbbreviation(venue: string) {
-  let abbreviations: { [key: string]: string } = {
-    "Neural Information Processing Systems": "NeurIPS",
-    "International Conference on Machine Learning": "ICML",
-    "International Conference on Learning Representations": "ICLR",
-    "AAAI Conference on Artificial Intelligence": "AAAI",
-    "Journal of Machine Learning Research": "JMLR",
-    "International Joint Conference on Artificial Intelligence": "IJCAI",
-    "ACM Multimedia": "ACM MM",
-    "Knowledge Discovery and Data Mining": "KDD",
-    "Conference on Empirical Methods in Natural Language Processing": "EMNLP",
-    "Annual Meeting of the Association for Computational Linguistics": "ACL",
-    "North American Chapter of the Association for Computational Linguistics":
-      "NAACL",
-    "Computer Vision and Pattern Recognition": "CVPR",
-    "European Conference on Computer Vision": "ECCV",
-    "IEEE International Conference on Computer Vision": "ICCV",
-    "IEEE Transactions on Pattern Analysis and Machine Intelligence": "TPAMI",
-    "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval":
-      "SIGIR",
-    "IEEE Workshop/Winter Conference on Applications of Computer Vision":
-      "WACV",
-    "Conference of the European Chapter of the Association for Computational Linguistics":
-      "EACL",
-  };
+  if (Object.keys(lowercase_abbreviations).length === 0) {
+    let abbreviations: { [key: string]: string } = {
+      "Neural Information Processing Systems": "NeurIPS",
+      "International Conference on Machine Learning": "ICML",
+      "International Conference on Learning Representations": "ICLR",
+      "AAAI Conference on Artificial Intelligence": "AAAI",
+      "Journal of Machine Learning Research": "JMLR",
+      "International Joint Conference on Artificial Intelligence": "IJCAI",
+      "ACM Multimedia": "ACM MM",
+      "Knowledge Discovery and Data Mining": "KDD",
+      "Conference on Empirical Methods in Natural Language Processing": "EMNLP",
+      "Annual Meeting of the Association for Computational Linguistics": "ACL",
+      "North American Chapter of the Association for Computational Linguistics":
+        "NAACL",
+      "Computer Vision and Pattern Recognition": "CVPR",
+      "European Conference on Computer Vision": "ECCV",
+      "IEEE International Conference on Computer Vision": "ICCV",
+      "IEEE Transactions on Pattern Analysis and Machine Intelligence": "TPAMI",
+      "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval":
+        "SIGIR",
+      "IEEE Workshop/Winter Conference on Applications of Computer Vision":
+        "WACV",
+      "Conference of the European Chapter of the Association for Computational Linguistics":
+        "EACL",
+    };
+    Object.keys(abbreviations).forEach((key) => {
+      lowercase_abbreviations[key.toLowerCase()] = abbreviations[key];
+    });
+  }
+  // console.log(lowercase_abbreviations)
+  // console.log(`lowercase venue: ${venue.toLowerCase()}`)
+  // console.log(venue.toLowerCase() in lowercase_abbreviations)
+
   let cvpr_string: string =
     "IEEE/CVF Conference on Computer Vision and Pattern Recognition";
-  if (venue in abbreviations) {
-    return abbreviations[venue];
+  if (venue.toLowerCase() in lowercase_abbreviations) {
+    return lowercase_abbreviations[venue.toLowerCase()];
   } else if (venue.includes(cvpr_string)) {
     return "CVPR";
   } else {
