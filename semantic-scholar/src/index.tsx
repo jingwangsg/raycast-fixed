@@ -75,7 +75,23 @@ function SearchListItem({
   let yearString = String(paper.year % 100).padStart(2, "0");
   if (paper.DOI && !paper.DOI.includes("arXiv")) {
     // DOI like "10.1109/CVPR.2018.00675"
-    yearString = paper.DOI.split("/")[1].split(".")[1].slice(2, 4);
+    console.log(paper.DOI);
+    if (
+      paper.DOI.includes("iccv") ||
+      paper.DOI.includes("cvpr") ||
+      paper.DOI.includes("eccv")
+    ) {
+      yearString = paper.DOI.split("/")[1].split(".")[1].slice(2, 4);
+    } else if (paper.DOI.includes("acl") || paper.DOI.includes("emnlp")) {
+      yearString = paper.DOI.split("/")[1].split(".")[1].slice(0, 2);
+    } else if (paper.DOI.includes("aaai")) {
+      // doi like 10.1609/aaai.v33i01.33016786
+      // v33 corresponds to year 2019, so calculate year accordingly
+      yearString = String(
+        1986 + Number(paper.DOI.split(".")[1].slice(1, 3))
+      ).slice(2, 4);
+    }
+    console.log(yearString);
   }
 
   markdown_string += " ";
@@ -89,8 +105,6 @@ function SearchListItem({
   } else if (paper.DOI) {
     markdown_string += ` [Official](https://doi.org.remotexs.ntu.edu.sg/${paper.DOI}) `;
   }
-  console.log(paper.title);
-  console.log(paper.DOI);
   paper.markdown = markdown_string;
   paper.top_citation_url = paper.url + "?" + params;
 
