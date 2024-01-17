@@ -73,7 +73,7 @@ function SearchListItem({
 
   let conference_abbreviation: string = getConferenceAbbreviation(paper.venue);
   let yearString = String(paper.year % 100).padStart(2, "0");
-  if (paper.DOI) {
+  if (paper.DOI && !paper.DOI.includes("arXiv")) {
     // DOI like "10.1109/CVPR.2018.00675"
     yearString = paper.DOI.split("/")[1].split(".")[1].slice(2, 4);
   }
