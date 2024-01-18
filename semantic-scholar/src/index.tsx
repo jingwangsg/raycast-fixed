@@ -26,7 +26,7 @@ export default function Command() {
       onSearchTextChange={search}
       searchBarPlaceholder="Search Papers"
       // isShowingDetail={state.results.length > 0}
-      throttle
+      throttle={true}
     >
       <List.Section title="Results" subtitle={state.results.length + ""}>
         {state.results.map((paper) => (
@@ -48,6 +48,12 @@ function SearchListItem({
   paper: Paper;
   searchUrl: string;
 }) {
+  // complete arxiv from DOI if possible
+  if (paper.DOI && paper.DOI.includes("arXiv")) {
+    let arxiv_id = paper.DOI.split("arXiv.")[1];
+    paper.arxiv = arxiv_id;
+  }
+
   let authorText =
     paper.authors && paper.authors.length > 1 ? paper.authors[0].name : "";
   if (paper.authors && paper.authors.length > 1) {
@@ -73,26 +79,29 @@ function SearchListItem({
 
   let conference_abbreviation: string = getConferenceAbbreviation(paper.venue);
   console.log(paper.venue);
+  console.log(paper.DOI);
   let yearString = String(paper.year % 100).padStart(2, "0");
   if (paper.DOI && !paper.DOI.includes("arXiv")) {
     // DOI like "10.1109/CVPR.2018.00675"
-    console.log(paper.DOI);
     if (
       paper.DOI.includes("iccv") ||
       paper.DOI.includes("cvpr") ||
       paper.DOI.includes("eccv")
     ) {
+      console.log(paper.DOI);
       yearString = paper.DOI.split("/")[1].split(".")[1].slice(2, 4);
     } else if (paper.DOI.includes("acl") || paper.DOI.includes("emnlp")) {
-      yearString = paper.DOI.split("/")[1].split(".")[1].slice(0, 2);
+      console.log(paper.DOI);
+      yearString = paper.DOI.split("/")[1].split(".")[0].slice(2, 4);
     } else if (paper.DOI.includes("aaai")) {
       // doi like 10.1609/aaai.v33i01.33016786
       // v33 corresponds to year 2019, so calculate year accordingly
+      console.log(paper.DOI);
       yearString = String(
         1986 + Number(paper.DOI.split(".")[1].slice(1, 3))
       ).slice(2, 4);
     }
-    console.log(yearString);
+    // console.log(yearString);
   }
 
   markdown_string += " ";
@@ -100,7 +109,11 @@ function SearchListItem({
     markdown_string += conference_abbreviation + "'" + yearString;
   } else if (paper.venue == "arXiv.org" || paper.venue == "") {
     markdown_string += "arXiv" + ":" + paper.arxiv;
+  } else {
+    markdown_string += paper.venue;
+    markdown_string += "'" + yearString;
   }
+  console.log(paper.arxiv);
   if (paper.arxiv) {
     markdown_string += ` [PDF](https://arxiv.org/pdf/${paper.arxiv}.pdf) `;
   } else if (paper.DOI) {
@@ -322,26 +335,30 @@ function connectPapersURL(paper: Paper): string {
   return "https://www.connectedpapers.com/main/" + paper.id;
 }
 
+let conferences_all: string[] = [];
+
 function getConferenceList(): string[] {
-  let conferences = [
-    "Neural Information Processing Systems",
-    "International Conference on Machine Learning",
-    "International Conference on Learning Representations",
-    "AAAI Conference on Artificial Intelligence",
-    "Journal of Machine Learning Research",
-    // "International Joint Conference on Artificial Intelligence",
-    // "ACM Multimedia",
-    "Knowledge Discovery and Data Mining",
-    "Conference on Empirical Methods in Natural Language Processing",
-    "Annual Meeting of the Association for Computational Linguistics",
-    "North American Chapter of the Association for Computational Linguistics",
-    "Computer Vision and Pattern Recognition",
-    "European Conference on Computer Vision",
-    "IEEE International Conference on Computer Vision",
-    "IEEE Transactions on Pattern Analysis and Machine Intelligence",
-    "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval",
-  ];
-  return conferences;
+  if (conferences_all.length === 0) {
+    conferences_all = [
+      "Neural Information Processing Systems",
+      "International Conference on Machine Learning",
+      "International Conference on Learning Representations",
+      "AAAI Conference on Artificial Intelligence",
+      "Journal of Machine Learning Research",
+      // "International Joint Conference on Artificial Intelligence",
+      // "ACM Multimedia",
+      "Knowledge Discovery and Data Mining",
+      "Conference on Empirical Methods in Natural Language Processing",
+      "Annual Meeting of the Association for Computational Linguistics",
+      "North American Chapter of the Association for Computational Linguistics",
+      "Computer Vision and Pattern Recognition",
+      "European Conference on Computer Vision",
+      "IEEE International Conference on Computer Vision",
+      "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+      "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval",
+    ];
+  }
+  return conferences_all;
 }
 let lowercase_abbreviations: { [key: string]: string } = {};
 
