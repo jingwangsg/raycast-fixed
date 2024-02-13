@@ -223,7 +223,7 @@ function PaperDetails({ paper }: { paper: Paper }) {
     md += "`TL;DR` " + paper.tldr + "\n\n";
   }
   if (paper.abstract) {
-    md += `> ${paper.abstract}\n`;
+    md += `~~~\n${paper.abstract}\n~~~\n`;
   }
 
   let bib_url = "https://dblp2.uni-trier.de/rec/" + paper.dblp + ".bib";
