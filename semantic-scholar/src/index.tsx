@@ -387,6 +387,7 @@ function getConferenceAbbreviation(venue: string) {
         "WACV",
       "Conference of the European Chapter of the Association for Computational Linguistics":
         "EACL",
+      "IEEE Transactions on Knowledge and Data Engineering": "TKDE",
     };
     Object.keys(abbreviations).forEach((key) => {
       lowercase_abbreviations[key.toLowerCase()] = abbreviations[key];
