@@ -18,6 +18,17 @@
       "mode": "view"
     }
   ],
+  "preferences": [
+    {
+      "default": "~/Downloads/PDF",
+      "description": "Path to locate downloaded PDFs",
+      "name": "pdfDir",
+      "placeholder": "~/Downloads/PDF",
+      "required": false,
+      "title": "PDF Path",
+      "type": "textfield"
+    }
+  ],
   "dependencies": {
     "@raycast/api": "^1.52.1",
     "node-fetch": "^3.0.0"

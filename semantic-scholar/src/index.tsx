@@ -10,12 +10,19 @@ import {
   popToRoot,
   Clipboard,
   Color,
+  getPreferenceValues,
 } from "@raycast/api";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import fetch, { AbortError } from "node-fetch";
 import { get } from "http";
+import { conferences_list, getConferenceAbbreviation } from "./constant";
+import { Paper, Author, SearchState, Preference } from "./interface";
+import { ActionCopyBibTeX, ActionDownloadAndOpen } from "./action";
+const os = require("os");
 import * as fs from "fs";
 import * as path from "path";
+
+let preference: Preference = getPreferenceValues();
 
 export default function Command() {
   const { state, search } = useSearch();
@@ -34,6 +41,7 @@ export default function Command() {
             key={paper.id}
             paper={paper}
             searchUrl={state.searchUrl}
+            preference={preference}
           />
         ))}
       </List.Section>
@@ -41,46 +49,8 @@ export default function Command() {
   );
 }
 
-function SearchListItem({
-  paper,
-  searchUrl,
-}: {
-  paper: Paper;
-  searchUrl: string;
-}) {
-  // complete arxiv from DOI if possible
-  if (paper.DOI && paper.DOI.includes("arXiv")) {
-    let arxiv_id = paper.DOI.split("arXiv.")[1];
-    paper.arxiv = arxiv_id;
-  }
-
-  let authorText =
-    paper.authors && paper.authors.length > 1 ? paper.authors[0].name : "";
-  if (paper.authors && paper.authors.length > 1) {
-    authorText += ", et al.";
-  }
-  const conferences = getConferenceList();
-  let params = "";
-  for (let i = 0; i < conferences.length; i++) {
-    if (i > 0) {
-      params += "&";
-    }
-    params +=
-      encodeURIComponent(`venue[${i}]`) +
-      "=" +
-      encodeURIComponent(conferences[i]);
-  }
-  const accessories = [
-    // { tag: { value: String(paper.venue), color: Color.Blue } },
-    { tag: { value: String(paper.citationCount), color: Color.Yellow } },
-    { tag: { value: String(paper.year), color: Color.Green } },
-  ];
-  let markdown_string = "[" + paper.title + "](" + paper.url + ")";
-
-  let conference_abbreviation: string = getConferenceAbbreviation(paper.venue);
-  console.log(paper.venue);
-  console.log(paper.DOI);
-  let yearString = String(paper.year % 100).padStart(2, "0");
+function getYearString(paper: Paper) {
+  let yearString = String(paper.year % 100).padStart(2, "0"); // default
   if (paper.DOI && !paper.DOI.includes("arXiv")) {
     // DOI like "10.1109/CVPR.2018.00675"
     if (
@@ -88,22 +58,24 @@ function SearchListItem({
       paper.DOI.includes("cvpr") ||
       paper.DOI.includes("eccv")
     ) {
-      console.log(paper.DOI);
       yearString = paper.DOI.split("/")[1].split(".")[1].slice(2, 4);
     } else if (paper.DOI.includes("acl") || paper.DOI.includes("emnlp")) {
-      console.log(paper.DOI);
       yearString = paper.DOI.split("/")[1].split(".")[0].slice(2, 4);
     } else if (paper.DOI.includes("aaai")) {
       // doi like 10.1609/aaai.v33i01.33016786
       // v33 corresponds to year 2019, so calculate year accordingly
-      console.log(paper.DOI);
       yearString = String(
         1986 + Number(paper.DOI.split(".")[1].slice(1, 3))
       ).slice(2, 4);
     }
     // console.log(yearString);
   }
-
+  return yearString;
+}
+function getMarkdownString(paper: Paper) {
+  let yearString = getYearString(paper);
+  let conference_abbreviation: string = getConferenceAbbreviation(paper.venue);
+  let markdown_string = "[" + paper.title + "](" + paper.url + ")";
   markdown_string += " ";
   if (conference_abbreviation != "") {
     markdown_string += conference_abbreviation + "'" + yearString;
@@ -119,12 +91,56 @@ function SearchListItem({
   } else if (paper.DOI) {
     markdown_string += ` [Official](https://doi.org.remotexs.ntu.edu.sg/${paper.DOI}) `;
   }
+  return markdown_string;
+}
+
+function SearchListItem({
+  paper,
+  searchUrl,
+  preference,
+}: {
+  paper: Paper;
+  searchUrl: string;
+  preference: Preference;
+}) {
+  // complete arxiv from DOI if possible
+  if (paper.DOI && paper.DOI.includes("arXiv")) {
+    let arxiv_id = paper.DOI.split("arXiv.")[1];
+    paper.arxiv = arxiv_id;
+  }
+
+  let authorText =
+    paper.authors && paper.authors.length > 1 ? paper.authors[0].name : "";
+  if (paper.authors && paper.authors.length > 1) {
+    authorText += ", et al.";
+  }
+  const conferences = conferences_list;
+  let params = "";
+  for (let i = 0; i < conferences.length; i++) {
+    if (i > 0) {
+      params += "&";
+    }
+    params +=
+      encodeURIComponent(`venue[${i}]`) +
+      "=" +
+      encodeURIComponent(conferences[i]);
+  }
+  const accessories = [
+    // { tag: { value: String(paper.venue), color: Color.Blue } },
+    { tag: { value: String(paper.citationCount), color: Color.Yellow } },
+    { tag: { value: String(paper.year), color: Color.Green } },
+  ];
+  console.log(paper.DOI);
+
+  let markdown_string = getMarkdownString(paper);
+
   paper.markdown = markdown_string;
   paper.top_citation_url = paper.url + "?" + params;
 
   let bib_url = "https://dblp2.uni-trier.de/rec/" + paper.dblp + ".bib";
   let arxiv_pdf_url = `https://arxiv.org/pdf/${paper.arxiv}.pdf`;
   let paper_url = String(paper.arxiv ? arxiv_pdf_url : paper.DOI);
+  const pdfDir = expandHomeDir(preference.pdfDir);
 
   return (
     <List.Item
@@ -143,10 +159,11 @@ function SearchListItem({
               target={<PaperDetails paper={paper} />}
               icon={Icon.ArrowRight}
             />
-            <Action.OpenInBrowser
+            {/* <Action.OpenInBrowser
               title="Open Paper in Browser"
               url={paper_url}
-            />
+            /> */}
+            <ActionDownloadAndOpen url={paper_url} pdfDir={pdfDir} />
             <Action.OpenInBrowser
               title="Open Paper in Semantic Scholar"
               url={paper.url}
@@ -186,6 +203,13 @@ function SearchListItem({
       }
     />
   );
+}
+
+function expandHomeDir(path: string) {
+  if (path.startsWith("~")) {
+    return path.replace("~", os.homedir());
+  }
+  return path;
 }
 
 function PaperDetails({ paper }: { paper: Paper }) {
@@ -335,79 +359,6 @@ function connectPapersURL(paper: Paper): string {
   return "https://www.connectedpapers.com/main/" + paper.id;
 }
 
-let conferences_all: string[] = [];
-
-function getConferenceList(): string[] {
-  if (conferences_all.length === 0) {
-    conferences_all = [
-      "Neural Information Processing Systems",
-      "International Conference on Machine Learning",
-      "International Conference on Learning Representations",
-      "AAAI Conference on Artificial Intelligence",
-      "Journal of Machine Learning Research",
-      // "International Joint Conference on Artificial Intelligence",
-      // "ACM Multimedia",
-      "Knowledge Discovery and Data Mining",
-      "Conference on Empirical Methods in Natural Language Processing",
-      "Annual Meeting of the Association for Computational Linguistics",
-      "North American Chapter of the Association for Computational Linguistics",
-      "Computer Vision and Pattern Recognition",
-      "European Conference on Computer Vision",
-      "IEEE International Conference on Computer Vision",
-      "IEEE Transactions on Pattern Analysis and Machine Intelligence",
-      "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval",
-    ];
-  }
-  return conferences_all;
-}
-let lowercase_abbreviations: { [key: string]: string } = {};
-
-function getConferenceAbbreviation(venue: string) {
-  if (Object.keys(lowercase_abbreviations).length === 0) {
-    let abbreviations: { [key: string]: string } = {
-      "Neural Information Processing Systems": "NeurIPS",
-      "International Conference on Machine Learning": "ICML",
-      "International Conference on Learning Representations": "ICLR",
-      "AAAI Conference on Artificial Intelligence": "AAAI",
-      "Journal of Machine Learning Research": "JMLR",
-      "International Joint Conference on Artificial Intelligence": "IJCAI",
-      "ACM Multimedia": "ACM MM",
-      "Knowledge Discovery and Data Mining": "KDD",
-      "Conference on Empirical Methods in Natural Language Processing": "EMNLP",
-      "Annual Meeting of the Association for Computational Linguistics": "ACL",
-      "North American Chapter of the Association for Computational Linguistics":
-        "NAACL",
-      "Computer Vision and Pattern Recognition": "CVPR",
-      "European Conference on Computer Vision": "ECCV",
-      "IEEE International Conference on Computer Vision": "ICCV",
-      "IEEE Transactions on Pattern Analysis and Machine Intelligence": "TPAMI",
-      "Annual International ACM SIGIR Conference on Research and Development in Information Retrieval":
-        "SIGIR",
-      "IEEE Workshop/Winter Conference on Applications of Computer Vision":
-        "WACV",
-      "Conference of the European Chapter of the Association for Computational Linguistics":
-        "EACL",
-      "IEEE Transactions on Knowledge and Data Engineering": "TKDE",
-    };
-    Object.keys(abbreviations).forEach((key) => {
-      lowercase_abbreviations[key.toLowerCase()] = abbreviations[key];
-    });
-  }
-  // console.log(lowercase_abbreviations)
-  // console.log(`lowercase venue: ${venue.toLowerCase()}`)
-  // console.log(venue.toLowerCase() in lowercase_abbreviations)
-
-  let cvpr_string: string =
-    "IEEE/CVF Conference on Computer Vision and Pattern Recognition";
-  if (venue.toLowerCase() in lowercase_abbreviations) {
-    return lowercase_abbreviations[venue.toLowerCase()];
-  } else if (venue.includes(cvpr_string)) {
-    return "CVPR";
-  } else {
-    return "";
-  }
-}
-
 // Function to read the API key from a text file synchronously
 function readApiKeySync(filePath: string): string {
   try {
@@ -520,130 +471,4 @@ async function performSearch(
       dblp: paper.externalIds.DBLP ? paper.externalIds.DBLP : "",
     };
   });
-}
-
-function ActionCopyBibTeX({ bib_url }: { bib_url: string }) {
-  const cancelRef = useRef<AbortController | null>(null);
-
-  const copyBibTex = useCallback(async () => {
-    const toast = await showToast({
-      style: Toast.Style.Animated,
-      title: "Fetching BibTeX from DBLP",
-    });
-
-    try {
-      cancelRef.current?.abort();
-      cancelRef.current = new AbortController();
-
-      // Get BibTeX from doi.org
-      const url = new URL(bib_url);
-
-      const response = await fetch(url.toString(), {
-        method: "get",
-        headers: {
-          Accept: "application/x-bibtex",
-        },
-        signal: cancelRef.current.signal,
-      });
-
-      const bibTeX = await response.text();
-
-      if (!response.ok || bibTeX === undefined) {
-        throw new Error("BibTeX was not found");
-      }
-
-      // Copy the response to the clipboard
-      await showHUD("Copied to Clipboard");
-      await Clipboard.copy(bibTeX);
-      await popToRoot();
-    } catch (error) {
-      toast.style = Toast.Style.Failure;
-      toast.title = "Unable to fetch BibTeX";
-      toast.message = String(error);
-    }
-  }, [cancelRef]);
-
-  return (
-    <Action
-      title="Copy BibTeX"
-      icon={Icon.Clipboard}
-      onAction={copyBibTex}
-      // shortcut={{ modifiers: ["shift", "cmd"], key: "c" }}
-    />
-  );
-}
-
-function ActionCopyBibTeXbyDOI({ DOI }: { DOI: string }) {
-  const cancelRef = useRef<AbortController | null>(null);
-
-  const copyBibTex = useCallback(async () => {
-    const toast = await showToast({
-      style: Toast.Style.Animated,
-      title: "Fetching BibTeX from doi.org",
-    });
-
-    try {
-      cancelRef.current?.abort();
-      cancelRef.current = new AbortController();
-
-      // Get BibTeX from doi.org
-      const url = new URL(DOI, "https://doi.org");
-
-      const response = await fetch(url.toString(), {
-        method: "get",
-        headers: {
-          Accept: "application/x-bibtex",
-        },
-        signal: cancelRef.current.signal,
-      });
-
-      const bibTeX = await response.text();
-
-      if (!response.ok || bibTeX === undefined) {
-        throw new Error("BibTeX was not found");
-      }
-
-      // Copy the response to the clipboard
-      await showHUD("Copied to Clipboard");
-      await Clipboard.copy(bibTeX);
-      await popToRoot();
-    } catch (error) {
-      toast.style = Toast.Style.Failure;
-      toast.title = "Unable to fetch BibTeX";
-      toast.message = String(error);
-    }
-  }, [cancelRef]);
-
-  return (
-    <Action title="Copy BibTeX" icon={Icon.Clipboard} onAction={copyBibTex} />
-  );
-}
-
-interface SearchState {
-  results: Paper[];
-  searchUrl: string;
-  isLoading: boolean;
-}
-
-interface Author {
-  name: string;
-}
-
-interface Paper {
-  id: string;
-  title: string;
-  abstract?: string;
-  authors?: Author[];
-  url: string;
-  venue: string;
-  year: number;
-  publicationDate: string;
-  referenceCount: number;
-  citationCount: number;
-  DOI: string | undefined;
-  tldr?: string;
-  arxiv?: string;
-  dblp?: string;
-  markdown?: string;
-  top_citation_url?: string;
 }
