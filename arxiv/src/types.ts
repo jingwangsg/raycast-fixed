@@ -17,6 +17,7 @@ export interface SearchListItemProps {
   category: string;
   first_category: string;
   pdf_link: string;
+  pdf_dir: string;
 }
 
 export enum ArxivCategory {
@@ -41,4 +42,8 @@ export enum ArxivCategoryColour {
   "stat" = Color.Orange,
   "eess" = Color.Purple,
   "econ" = Color.Magenta,
+}
+
+export interface Preference {
+  pdfDir: string;
 }

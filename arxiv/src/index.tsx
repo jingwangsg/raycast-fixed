@@ -1,11 +1,13 @@
-import { ActionPanel, Action, List, Icon, Color } from "@raycast/api";
+import { ActionPanel, Action, List, Icon, Color, getPreferenceValues } from "@raycast/api";
 import { useFetch } from "@raycast/utils";
 import { useState } from "react";
 import { URLSearchParams } from "node:url";
 import { formatDistanceToNow } from "date-fns";
 import natural from "natural";
-import { SearchResult, ArxivCategory, ArxivCategoryColour, SearchListItemProps } from "./types";
+import { SearchResult, ArxivCategory, ArxivCategoryColour, SearchListItemProps, Preference } from "./types";
 import { parseResponse } from "./utils";
+import { ActionDownloadAndOpen } from "./action";
+import { expandHomeDir } from "./utils";
 
 const DEFAULT_TEXT = "";
 const MAX_RESULTS = 30;
@@ -33,6 +35,8 @@ export default function Command() {
         category == "" || category === "phys" || entryCategory.includes(category)
     );
 
+  const preference = getPreferenceValues<Preference>();
+
   const title = isLoading ? "Loading..." : searchText.length ? "No Results" : "Use the search bar above to get started";
 
   return (
@@ -57,13 +61,22 @@ export default function Command() {
       <List.EmptyView icon={{ source: "../assets/1arxiv-logo.png" }} title={title} />
 
       <List.Section title="Results" subtitle={filteredData?.length + ""}>
-        {filteredData?.map((searchResult: SearchResult) => constructSearchListItem(searchResult))}
+        {filteredData?.map((searchResult: SearchResult) => constructSearchListItem({ searchResult, preference }))}
       </List.Section>
     </List>
   );
 }
 
-function SearchListItem({ id, published, title, authors, category, first_category, pdf_link }: SearchListItemProps) {
+function SearchListItem({
+  id,
+  published,
+  title,
+  authors,
+  category,
+  first_category,
+  pdf_link,
+  pdf_dir,
+}: SearchListItemProps) {
   const date = new Date(published);
   const timeAgo = formatDistanceToNow(date, { addSuffix: true });
   const accessories = [{ tag: timeAgo }];
@@ -78,6 +91,7 @@ function SearchListItem({ id, published, title, authors, category, first_categor
   ] as unknown as Color.ColorLike;
 
   const ar5iv_link = pdf_link.replace("arxiv", "ar5iv");
+  const abs_link = pdf_link.replace("pdf", "abs");
 
   return (
     <List.Item
@@ -87,8 +101,9 @@ function SearchListItem({ id, published, title, authors, category, first_categor
       subtitle={primaryAuthor}
       actions={
         <ActionPanel>
-          <Action.OpenInBrowser title="Open PDF" url={pdf_link} icon={{ source: Icon.Link }} />
-          <Action.OpenInBrowser title="Open Ar5iv" url={ar5iv_link} icon={{ source: Icon.Link }} />
+          {/* <Action.OpenInBrowser title="Open PDF" url={pdf_link} icon={{ source: Icon.Link }} /> */}
+          <Action.OpenInBrowser title="Open Abstract" url={abs_link} icon={{ source: Icon.Link }} />
+          <ActionDownloadAndOpen url={pdf_link} pdfDir={pdf_dir} />
           <Action.CopyToClipboard
             title="Copy Link"
             content={pdf_link}
@@ -123,7 +138,8 @@ function compareSearchResults(textToCompare: string) {
   };
 }
 
-function constructSearchListItem(searchResult: SearchResult) {
+function constructSearchListItem({ searchResult, preference }: { searchResult: SearchResult; preference: Preference }) {
+  const pdfDir = expandHomeDir(preference.pdfDir);
   return (
     <SearchListItem
       key={searchResult.id ? searchResult.id : ""}
@@ -134,6 +150,7 @@ function constructSearchListItem(searchResult: SearchResult) {
       category={searchResult.category ? searchResult.category : ""}
       first_category={searchResult.category ? searchResult.category.split(".")[0] : ""}
       pdf_link={searchResult.link || ""}
+      pdf_dir={pdfDir}
     />
   );
 }

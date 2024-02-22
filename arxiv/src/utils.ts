@@ -1,3 +1,4 @@
+const os = require("os");
 import xml2js from "xml2js";
 import { SearchResult } from "./types";
 
@@ -57,4 +58,11 @@ export async function parseResponse(response: Response): Promise<SearchResult[]>
       return [];
     }
   });
+}
+
+export function expandHomeDir(path: string) {
+  if (path.startsWith("~")) {
+    return path.replace("~", os.homedir());
+  }
+  return path;
 }
