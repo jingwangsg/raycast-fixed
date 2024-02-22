@@ -149,7 +149,9 @@ function constructSearchListItem({ searchResult, preference }: { searchResult: S
       authors={searchResult.authors}
       category={searchResult.category ? searchResult.category : ""}
       first_category={searchResult.category ? searchResult.category.split(".")[0] : ""}
-      pdf_link={searchResult.link || ""}
+      // pdf_link={searchResult.link + ".pdf" || ""}
+      // prevent something like 1706.03762v7 to ruin the file naming
+      pdf_link={searchResult.id ? `https://arxiv.org/pdf/${searchResult.id}.pdf` : ""}
       pdf_dir={pdfDir}
     />
   );
