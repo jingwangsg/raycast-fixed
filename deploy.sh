@@ -7,6 +7,7 @@ deploy() {
     npm run build
 }
 
+rm -rf **/node_modules
 deploy "arxiv"
 deploy "dblp"
 deploy "semantic-scholar"

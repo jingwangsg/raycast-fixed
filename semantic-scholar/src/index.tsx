@@ -160,8 +160,6 @@ function SearchListItem({
   );
 }
 
-
-
 function PaperDetails({ paper }: { paper: Paper }) {
   // function PaperDetails(paper: Paper): string {
   let md = `## ${paper.title} (${paper.citationCount})\n`;
