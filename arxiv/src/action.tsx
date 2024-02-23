@@ -102,6 +102,7 @@ export function ActionDownloadAndOpen({ url, pdfDir }: { url: string; pdfDir: st
     try {
       const pdfFilename = url.split("/").pop() || "downloaded.pdf";
       const destinationPath = path.join(pdfDir, pdfFilename);
+      console.log(destinationPath);
 
       await downloadPdf(url, destinationPath);
 

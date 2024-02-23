@@ -91,7 +91,7 @@ function SearchListItem({
   ] as unknown as Color.ColorLike;
 
   const ar5iv_link = pdf_link.replace("arxiv", "ar5iv");
-  const abs_link = pdf_link.replace("pdf", "abs");
+  const abs_link = id;
 
   return (
     <List.Item
@@ -140,10 +140,13 @@ function compareSearchResults(textToCompare: string) {
 
 function constructSearchListItem({ searchResult, preference }: { searchResult: SearchResult; preference: Preference }) {
   const pdfDir = expandHomeDir(preference.pdfDir);
+  const _id = searchResult.id[0];
+  const id = _id.slice(-2, -1) == "v" ? _id.slice(0, -2) : _id;
+
   return (
     <SearchListItem
-      key={searchResult.id ? searchResult.id : ""}
-      id={searchResult.id ? searchResult.id[0] : ""}
+      key={id ? id : ""}
+      id={id ? id : ""}
       published={searchResult.published}
       title={searchResult.title ? searchResult.title[0] : ""}
       authors={searchResult.authors}
@@ -151,7 +154,7 @@ function constructSearchListItem({ searchResult, preference }: { searchResult: S
       first_category={searchResult.category ? searchResult.category.split(".")[0] : ""}
       // pdf_link={searchResult.link + ".pdf" || ""}
       // prevent something like 1706.03762v7 to ruin the file naming
-      pdf_link={searchResult.id ? `https://arxiv.org/pdf/${searchResult.id}.pdf` : ""}
+      pdf_link={searchResult.id ? `https://arxiv.org/pdf/${id}.pdf` : ""}
       pdf_dir={pdfDir}
     />
   );
