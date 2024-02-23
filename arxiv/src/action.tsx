@@ -72,6 +72,8 @@ async function downloadPdf(url: string, destinationPath: string): Promise<void> 
     console.log("File already exists. Skipping download.");
     return;
   }
+  console.log(url);
+  console.log(destinationPath);
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to download: ${response.statusText}`);

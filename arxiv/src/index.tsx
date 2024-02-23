@@ -142,6 +142,7 @@ function constructSearchListItem({ searchResult, preference }: { searchResult: S
   const pdfDir = expandHomeDir(preference.pdfDir);
   const _id = searchResult.id[0];
   const id = _id.slice(-2, -1) == "v" ? _id.slice(0, -2) : _id;
+  const pdf_link = id.replace("abs", "pdf") + ".pdf";
 
   return (
     <SearchListItem
@@ -154,7 +155,7 @@ function constructSearchListItem({ searchResult, preference }: { searchResult: S
       first_category={searchResult.category ? searchResult.category.split(".")[0] : ""}
       // pdf_link={searchResult.link + ".pdf" || ""}
       // prevent something like 1706.03762v7 to ruin the file naming
-      pdf_link={searchResult.id ? `https://arxiv.org/pdf/${id}.pdf` : ""}
+      pdf_link={searchResult.id ? pdf_link : ""}
       pdf_dir={pdfDir}
     />
   );
