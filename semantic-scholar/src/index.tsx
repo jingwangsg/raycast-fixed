@@ -95,6 +95,7 @@ function SearchListItem({
   let bib_url = "https://dblp2.uni-trier.de/rec/" + paper.dblp + ".bib";
   let arxiv_pdf_url = `https://arxiv.org/pdf/${paper.arxiv}.pdf`;
   let paper_url = String(paper.arxiv ? arxiv_pdf_url : paper.DOI);
+  let kimi_url = "https://papers.cool/arxiv/" + paper.arxiv;
   const pdfDir = expandHomeDir(preference.pdfDir);
 
   return (
@@ -122,6 +123,10 @@ function SearchListItem({
             <Action.OpenInBrowser
               title="Open Paper in Semantic Scholar"
               url={paper.url}
+            />
+            <Action.OpenInBrowser
+              title="Open Paper in Kimi"
+              url={kimi_url}
               shortcut={{ modifiers: ["shift", "cmd"], key: "enter" }}
             />
             <Action.CopyToClipboard
@@ -345,6 +350,7 @@ async function performSearch(
     headers["x-api-key"] = String(api_key);
   }
   // console.log(headers);
+  console.log(headers["x-api-key"]);
   console.log(
     "https://api.semanticscholar.org/graph/v1/paper/search?" + params.toString()
   );

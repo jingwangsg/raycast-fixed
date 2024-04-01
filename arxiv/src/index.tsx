@@ -90,8 +90,11 @@ function SearchListItem({
     first_category as keyof typeof ArxivCategoryColour
   ] as unknown as Color.ColorLike;
 
-  const ar5iv_link = pdf_link.replace("arxiv", "ar5iv");
+  // const ar5iv_link = pdf_link.replace("arxiv", "ar5iv");
   const abs_link = id;
+  // http://arxiv.org/abs/2110.06553 -> 2110.06553
+  const arxiv_id = id.split("/").pop();
+  const kimi_url = "https://papers.cool/arxiv/" + arxiv_id;
 
   return (
     <List.Item
@@ -103,6 +106,12 @@ function SearchListItem({
         <ActionPanel>
           {/* <Action.OpenInBrowser title="Open PDF" url={pdf_link} icon={{ source: Icon.Link }} /> */}
           <Action.OpenInBrowser title="Open Abstract" url={abs_link} icon={{ source: Icon.Link }} />
+          <Action.OpenInBrowser
+            title="Open Kimi"
+            url={kimi_url}
+            icon={{ source: Icon.Link }}
+            shortcut={{ modifiers: ["shift", "cmd"], key: "enter" }}
+          />
           <ActionDownloadAndOpen url={pdf_link} pdfDir={pdf_dir} />
           <Action.CopyToClipboard
             title="Copy Link"
@@ -119,7 +128,7 @@ function SearchListItem({
 
 function constructSearchQuery(text: string, maxResults: number) {
   return new URLSearchParams({
-    search_query: text,
+    search_query: `"${text}"`,
     sortBy: "relevance",
     sortOrder: "descending",
     max_results: maxResults.toString(),
