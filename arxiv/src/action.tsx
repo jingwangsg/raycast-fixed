@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { ActionPanel, Action, Icon, showToast, Toast, showHUD, popToRoot, Clipboard } from "@raycast/api";
+import { ActionPanel, Action, Icon, showToast, Toast, showHUD, popToRoot, Clipboard, Keyboard } from "@raycast/api";
 import { useState, useEffect } from "react";
 import fs from "fs";
 import path from "path";
@@ -92,7 +92,15 @@ function openFileWithDefaultApplication(filePath: string) {
   });
 }
 
-export function ActionDownloadAndOpen({ url, pdfDir }: { url: string; pdfDir: string }) {
+export function ActionDownloadAndOpen({
+  url,
+  pdfDir,
+  shortcut,
+}: {
+  url: string;
+  pdfDir: string;
+  shortcut?: Keyboard.Shortcut;
+}) {
   const [downloadedFilePath, setDownloadedFilePath] = useState<string | null>(null);
 
   const handleDownloadAndOpen = async () => {
@@ -121,5 +129,7 @@ export function ActionDownloadAndOpen({ url, pdfDir }: { url: string; pdfDir: st
     }
   };
 
-  return <Action title="Download and Open PDF" onAction={handleDownloadAndOpen} icon={Icon.Download} />;
+  return (
+    <Action title="Download and Open PDF" onAction={handleDownloadAndOpen} icon={Icon.Download} shortcut={shortcut} />
+  );
 }

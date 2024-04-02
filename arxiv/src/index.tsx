@@ -106,13 +106,13 @@ function SearchListItem({
         <ActionPanel>
           {/* <Action.OpenInBrowser title="Open PDF" url={pdf_link} icon={{ source: Icon.Link }} /> */}
           <Action.OpenInBrowser title="Open Abstract" url={abs_link} icon={{ source: Icon.Link }} />
+          <ActionDownloadAndOpen url={pdf_link} pdfDir={pdf_dir} shortcut={{ modifiers: ["cmd"], key: "enter" }} />
           <Action.OpenInBrowser
             title="Open Kimi"
             url={kimi_url}
             icon={{ source: Icon.Link }}
             shortcut={{ modifiers: ["shift", "cmd"], key: "enter" }}
           />
-          <ActionDownloadAndOpen url={pdf_link} pdfDir={pdf_dir} />
           <Action.CopyToClipboard
             title="Copy Link"
             content={pdf_link}
