@@ -16,16 +16,21 @@ export default function Command() {
   const [searchText, setSearchText] = useState("");
   const [category, setCategory] = useState(ArxivCategory.All);
 
+  const replacedSearchText = searchText.replace(/[:\-]/g, " ");
   // Load data from arXiv API
   const { data, isLoading } = useFetch(
-    "http://export.arxiv.org/api/query?" + constructSearchQuery(searchText || DEFAULT_TEXT, MAX_RESULTS),
+    "http://export.arxiv.org/api/query?" + constructSearchQuery(replacedSearchText || DEFAULT_TEXT, MAX_RESULTS),
     {
       parseResponse: parseResponse,
       execute: searchText.length > 0,
     }
   );
 
-  console.log("http://export.arxiv.org/api/query?" + constructSearchQuery(searchText || DEFAULT_TEXT, MAX_RESULTS));
+  // replace ":" and "-" in searchText to space
+
+  console.log(
+    "http://export.arxiv.org/api/query?" + constructSearchQuery(replacedSearchText || DEFAULT_TEXT, MAX_RESULTS)
+  );
 
   // Sort and filter data based on search text and category
   const filteredData = data
