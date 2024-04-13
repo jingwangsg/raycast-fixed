@@ -72,6 +72,8 @@ export default function Command() {
   );
 }
 
+
+
 function SearchListItem({
   id,
   published,
@@ -101,6 +103,8 @@ function SearchListItem({
   const arxiv_id = id.split("/").pop();
   const kimi_url = "https://papers.cool/arxiv/" + arxiv_id;
 
+  const markdown_string = `[${title}](${pdf_link}) arXiv:${arxiv_id}`;
+
   return (
     <List.Item
       id={id}
@@ -119,8 +123,8 @@ function SearchListItem({
             shortcut={{ modifiers: ["shift", "cmd"], key: "enter" }}
           />
           <Action.CopyToClipboard
-            title="Copy Link"
-            content={pdf_link}
+            title="Copy Markdown"
+            content={markdown_string}
             icon={{ source: Icon.Redo }}
             shortcut={{ modifiers: ["shift", "cmd"], key: "c" }}
           />

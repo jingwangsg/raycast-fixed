@@ -27,21 +27,34 @@ function getYearString(paper: Paper) {
 export function getMarkdownString(paper: Paper) {
   let yearString = getYearString(paper);
   let conference_abbreviation: string = getConferenceAbbreviation(paper.venue);
-  let markdown_string = "[" + paper.title + "](" + paper.url + ")";
+
+  let url = paper.url;
+  if (paper.arxiv) {
+    url = `https://arxiv.org/pdf/${paper.arxiv}.pdf`;
+  } else {
+    url = `https://doi.org/${paper.DOI}`;
+  }
+
+  let markdown_string = "[" + paper.title + "](" + url + ")";
   markdown_string += " ";
   if (conference_abbreviation != "") {
-    markdown_string += conference_abbreviation + "'" + yearString;
+    let postfix = conference_abbreviation + "'" + yearString;
+    if (paper.arxiv) {
+      const arxiv_date = paper.arxiv.split(".")[0];
+      postfix = postfix + `/${arxiv_date}`;
+    }
+    markdown_string += postfix;
   } else if (paper.venue == "arXiv.org" || paper.venue == "") {
     markdown_string += "arXiv" + ":" + paper.arxiv;
   } else {
     markdown_string += paper.venue;
     markdown_string += "'" + yearString;
   }
-  console.log(paper.arxiv);
-  if (paper.arxiv) {
-    markdown_string += ` [PDF](https://arxiv.org/pdf/${paper.arxiv}.pdf) `;
-  } else if (paper.DOI) {
-    markdown_string += ` [Official](https://doi.org.remotexs.ntu.edu.sg/${paper.DOI}) `;
-  }
+  // console.log(paper.arxiv);
+  // if (paper.arxiv) {
+  //   markdown_string += ` [PDF](https://arxiv.org/pdf/${paper.arxiv}.pdf) `;
+  // } else if (paper.DOI) {
+  //   markdown_string += ` [Official](https://doi.org.remotexs.ntu.edu.sg/${paper.DOI}) `;
+  // }
   return markdown_string;
 }
