@@ -40,6 +40,11 @@ export const abbreviations: { [key: string]: string } = {
   "Conference of the European Chapter of the Association for Computational Linguistics":
     "EACL",
   "IEEE Transactions on Knowledge and Data Engineering": "TKDE",
+  // Robotics
+  "Conference on Robot Learning": "CoRL",
+  "IEEE International Conference on Robotics and Automation": "ICRA",
+  "IEEE Transactions on Robotics": "TRO",
+
 };
 
 let lowercase_abbreviations: { [key: string]: string } = {};
