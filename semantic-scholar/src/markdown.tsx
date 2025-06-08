@@ -39,6 +39,7 @@ export function getMarkdownString(paper: Paper) {
   markdown_string += " ";
   if (conference_abbreviation != "") {
     let postfix = conference_abbreviation + "'" + yearString;
+
     if (paper.arxiv) {
       const arxiv_date = paper.arxiv.split(".")[0];
       postfix = postfix + `/${arxiv_date}`;
@@ -47,8 +48,12 @@ export function getMarkdownString(paper: Paper) {
   } else if (paper.venue == "arXiv.org" || paper.venue == "") {
     markdown_string += "arXiv" + ":" + paper.arxiv;
   } else {
-    markdown_string += paper.venue;
-    markdown_string += "'" + yearString;
+    let postfix = paper.venue + "'" + yearString;
+    if (paper.arxiv) {
+      const arxiv_date = paper.arxiv.split(".")[0];
+      postfix = postfix + `/${arxiv_date}`;
+    }
+    markdown_string += postfix;
   }
   // console.log(paper.arxiv);
   // if (paper.arxiv) {
