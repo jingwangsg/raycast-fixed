@@ -3,102 +3,165 @@ import { SearchResult } from "./types";
 
 declare module "xml2js";
 
+const INVALID_ACCESS = new Set(["unavailable", "withdrawn"]);
+
 export async function parseResponse(response: Response): Promise<SearchResult[]> {
+  const text = await response.text();
+  const contentType = response.headers.get("content-type") ?? "";
+  const isJson = contentType.includes("application/json") || text.trimStart().startsWith("{");
+
+  if (isJson) {
+    return parseJsonResponse(text);
+  }
+
+  return parseXmlResponse(text);
+}
+
+function parseJsonResponse(jsonText: string): SearchResult[] {
+  let parsed: any;
+  try {
+    parsed = JSON.parse(jsonText);
+  } catch (error) {
+    throw new Error(`Failed to parse DBLP JSON response: ${String(error)}`);
+  }
+
+  const hits = parsed?.result?.hits?.hit;
+  if (!hits) {
+    return [];
+  }
+
+  const hitArray = Array.isArray(hits) ? hits : [hits];
+  return hitArray.map((hit: any) => mapJsonHit(hit));
+}
+
+async function parseXmlResponse(xmlText: string): Promise<SearchResult[]> {
   const parser = new xml2js.Parser({ explicitArray: true, mergeAttrs: true });
+  const result = await parser.parseStringPromise(xmlText);
+  const hits = result?.result?.hits?.[0]?.hit;
 
-  // Read the body content as a string
-  const xml = await response.text();
-  // console.debug(xml)
+  if (!hits) {
+    return [];
+  }
 
-  // Parse the XML string
-  return parser.parseStringPromise(xml).then((result: any) => {
-    // console.debug(result.result.hits[0].hit)
+  return hits.map((hit: any) => mapXmlHit(hit));
+}
 
-    if (result.result.hits[0].hit) {
-      return result.result.hits[0].hit.map((hit: any) => {
-        let url = "";
-        let authors = "";
-        let title = "";
-        let venue = "";
-        let year = "";
-        let access = "";
-        let info = hit.info[0];
+function mapJsonHit(hit: any): SearchResult {
+  const info = hit?.info ?? {};
+  const access = valueToString(info.access);
 
-        // try {
-        //   console.debug(["unavailable", "withdrawn"].includes(info.access[0]));
-        // }
-        // catch (err) {
-        //   console.debug(info)
-        // }
+  if (access && INVALID_ACCESS.has(access)) {
+    return invalidSearchResult(hit?.["@id"] ?? hit?.id);
+  }
 
-        if (info.access && ["unavailable", "withdrawn"].includes(info.access[0])) {
-          return {
-            id: hit.id[0],
-            citekey: "",
-            url: "",
-            doi_url: "",
-            title: "",
-            authors: [""],
-            venue: "",
-            year: "",
-            access: "invalid"
-          };
-        }
+  return {
+    id: valueToString(hit?.["@id"] ?? hit?.id),
+    citekey: valueToString(info.key),
+    url: valueToString(info.url ?? hit?.url),
+    doi_url: extractDoiUrl(info),
+    title: valueToString(info.title),
+    authors: extractAuthors(info.authors),
+    venue: valueToString(info.venue),
+    year: valueToString(info.year),
+    access: access
+  };
+}
 
-        // Check url is not undefined
-        if (hit.url) {
-          url = info.url[0];
-        }
+function mapXmlHit(hit: any): SearchResult {
+  const info = hit?.info?.[0] ?? {};
+  const access = valueToString(info.access);
 
-        // try {
-        //   if (info.authors) {
-        //     console.debug(info.authors[0].author);
-        //   }
-        // }
-        // catch (error) {
-        //   console.debug("undefined");
-        //   console.debug(info);
-        // }
+  if (access && INVALID_ACCESS.has(access)) {
+    return invalidSearchResult(hit?.id?.[0]);
+  }
 
-        if (info.authors) {
-          authors = info.authors[0].author.map((author: any) => author._);
-        }
+  return {
+    id: valueToString(hit?.id),
+    citekey: valueToString(info.key),
+    url: valueToString(info.url ?? hit?.url),
+    doi_url: extractDoiUrl(info),
+    title: valueToString(info.title),
+    authors: extractAuthors(info.authors?.[0]),
+    venue: valueToString(info.venue),
+    year: valueToString(info.year),
+    access: access
+  };
+}
 
-        // Check title is not undefined
-        if (info.title) {
-          title = info.title[0];
-        }
+function extractAuthors(authorsNode: any): string[] {
+  if (!authorsNode) {
+    return [];
+  }
 
-        // Check venue is not undefined
-        if (info.venue) {
-          venue = info.venue[0];
-        }
+  const authorList = authorsNode.author ?? authorsNode;
+  const list = Array.isArray(authorList) ? authorList : [authorList];
 
-        // Check year is not undefined
-        if (info.year) {
-          year = info.year[0];
-        }
+  return list
+    .map((author) => valueToString(author))
+    .filter((author): author is string => Boolean(author));
+}
 
-        // Check access is not undefined
-        if (info.access) {
-          access = info.access[0];
-        }
+function extractDoiUrl(info: any): string {
+  const eeUrl = valueToString(info?.ee);
+  if (eeUrl) {
+    return eeUrl;
+  }
 
-        return {
-          id: hit.id[0],
-          citekey: info.key[0],
-          url: url,
-          doi_url: info.ee[0],
-          title: title,
-          authors: authors,
-          venue: venue,
-          year: year,
-          access: access
-        };
-      });
-    } else {
-      return [];
+  const doiValue = valueToString(info?.doi);
+  if (!doiValue) {
+    return "";
+  }
+
+  if (doiValue.startsWith("http://") || doiValue.startsWith("https://")) {
+    return doiValue;
+  }
+
+  return `https://doi.org/${doiValue}`;
+}
+
+function valueToString(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (Array.isArray(value)) {
+    return valueToString(value[0]);
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return value.toString();
+  }
+
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    if (record.text !== undefined) {
+      return valueToString(record.text);
     }
-  });
+    if (record["@text"] !== undefined) {
+      return valueToString(record["@text"]);
+    }
+    if (record._ !== undefined) {
+      return valueToString(record._);
+    }
+  }
 
+  return "";
+}
+
+function invalidSearchResult(idValue: unknown): SearchResult {
+  return {
+    id: valueToString(idValue),
+    citekey: "",
+    url: "",
+    doi_url: "",
+    title: "",
+    authors: [],
+    venue: "",
+    year: "",
+    access: "invalid"
+  };
 }

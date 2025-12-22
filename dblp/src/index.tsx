@@ -67,15 +67,9 @@ export default function Command() {
   const [searchText, setSearchText] = useState("");
   // const [url, setUrl] = useState<string | null>(null);
 
-  // Load data from arXiv API
-  let root_urls = [
-    "https://dblp.org/search/publ/api?",
-    "https://dblp.uni-trier.de/search/publ/api?",
-    "https://dblp2.uni-trier.de/search/publ/api?",
-    // "https://dblp.dagstuhl.de/search/publ/api?",
-  ];
-
-  let urls = root_urls.map((root_url) => root_url + constructSearchQuery(searchText || DEFAULT_TEXT, MAX_RESULTS));
+  // Load data from DBLP API
+  const rootUrls = ["https://dblp.org/search/publ/api?"];
+  const urls = rootUrls.map((rootUrl) => rootUrl + constructSearchQuery(searchText || DEFAULT_TEXT, MAX_RESULTS));
 
   // useEffect(() => {
   //   console.log("waiting...")
@@ -91,7 +85,7 @@ export default function Command() {
   // let isLoading = false;
   // fastestFetch.then((data_, isLoading_) => {data = data_; isLoading = isLoading_;})
 
-  const { data, isLoading } = useFetch(urls[2], {
+  const { data, isLoading } = useFetch(urls[0], {
     parseResponse: parseResponse,
     execute: searchText.length > 0,
     // keepPreviousData: false
@@ -173,7 +167,8 @@ function constructSearchQuery(text: string, maxResults: number) {
   // });
   return new URLSearchParams({
     q: text,
-    h: MAX_RESULTS.toString(),
+    h: maxResults.toString(),
+    format: "json",
   });
 }
 
@@ -197,7 +192,7 @@ function constructSearchListItem(searchResult: SearchResult) {
       citekey={searchResult.citekey ? searchResult.citekey : ""}
       url={searchResult.url ? searchResult.url : ""}
       doi_url={searchResult.doi_url ? searchResult.doi_url : ""}
-      bib_url={"https://dblp2.uni-trier.de/rec/" + searchResult.citekey + ".bib"}
+      bib_url={"https://dblp.org/rec/" + searchResult.citekey + ".bib"}
       title={searchResult.title ? searchResult.title : ""}
       authors={searchResult.authors ? searchResult.authors : []}
       venue={searchResult.venue ? searchResult.venue : ""}
