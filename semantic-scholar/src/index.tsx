@@ -17,7 +17,12 @@ import fetch, { AbortError } from "node-fetch";
 import { get } from "http";
 import { conferences_list, getConferenceAbbreviation } from "./constant";
 import { Paper, Author, SearchState, Preference } from "./types";
-import { ActionCopyBibTeX, ActionDownloadAndOpen } from "./action";
+import {
+  ActionCopyBibTeX,
+  ActionCopyCitations,
+  ActionCopyReferences,
+  ActionDownloadAndOpen,
+} from "./action";
 import { getMarkdownString } from "./markdown";
 import { expandHomeDir } from "./utils";
 import * as fs from "fs";
@@ -135,6 +140,8 @@ function SearchListItem({
               icon={Icon.Clipboard}
               shortcut={{ modifiers: ["shift", "cmd"], key: "c" }}
             />
+            <ActionCopyCitations paperId={paper.id} />
+            <ActionCopyReferences paperId={paper.id} />
             <Action.OpenInBrowser
               title="Open Search in Browser"
               url={searchUrl}
@@ -229,6 +236,8 @@ function PaperDetails({ paper }: { paper: Paper }) {
               icon={Icon.Clipboard}
               shortcut={{ modifiers: ["shift", "cmd"], key: "c" }}
             />
+            <ActionCopyCitations paperId={paper.id} />
+            <ActionCopyReferences paperId={paper.id} />
             <Action.OpenInBrowser
               title="[Top Only] Open Paper"
               url={String(paper.top_citation_url)}
